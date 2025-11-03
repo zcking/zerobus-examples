@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+package zerobus_hello_world;
+
+message table_zerobus_hello_world {
+	optional string msg = 1;
+	optional int64 timestamp = 2;
+}

@@ -1,0 +1,13 @@
+[package]
+name = "hello-world"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+databricks-zerobus-ingest-sdk.workspace = true
+tokio.workspace = true
+prost.workspace = true
+prost-types.workspace = true
+anyhow.workspace = true
