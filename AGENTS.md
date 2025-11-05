@@ -1,0 +1,230 @@
+# AGENTS.md
+
+This file provides instructions for AI coding agents working with the zerobus-rust-examples repository.
+
+## Project Overview
+
+This is a Rust workspace containing examples for the Databricks Zerobus SDK, which enables streaming data ingestion into Unity Catalog tables using Protocol Buffers over gRPC. The examples demonstrate SDK initialization, stream creation, message encoding, and record ingestion.
+
+## Setup Commands
+
+### Initial Setup
+
+```bash
+# Clone the repository
+git clone git@github.com:zcking/zerobus-rust-examples.git
+cd zerobus-rust-examples
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env with actual credentials and configuration
+export $(grep -v '^#' .env | grep -v '^$' | xargs)
+
+# Build all examples
+cargo build
+```
+
+### Protocol Buffer Schema Generation
+
+Protocol Buffer schemas must be generated from Unity Catalog tables using the `zerobus-generate` tool:
+
+**Installation:**
+
+```bash
+# Clone the SDK repository
+git clone https://github.com/databricks/zerobus-sdk-rs.git
+cd zerobus-sdk-rs/tools/generate_files
+
+# Build the tool
+cargo build --release
+
+# Copy to your cargo bin directory (makes it available globally)
+cp target/release/generate_files ~/.cargo/bin/zerobus-generate
+```
+
+**Usage:**
+
+```bash
+# Generate .proto, .rs, and .descriptor files
+zerobus-generate \
+  --uc-endpoint $DATABRICKS_HOST \
+  --client-id $DATABRICKS_CLIENT_ID \
+  --client-secret $DATABRICKS_CLIENT_SECRET \
+  --table $TABLE_NAME \
+  --output-dir examples/hello-world/proto
+```
+
+This generates three files in the proto directory:
+- `<table_name>.proto` - Protocol Buffer schema definition
+- `<table_name>.rs` - Rust code generated from the schema
+- `<table_name>.descriptor` - Binary descriptor file (not committed to git)
+
+## Build and Run Commands
+
+```bash
+# Build workspace
+cargo build
+
+# Build specific example
+cargo build --package hello-world
+
+# Run specific example
+cargo run --package hello-world
+
+# Run tests
+cargo test
+
+# Check code formatting
+cargo fmt --check
+
+# Run linter
+cargo clippy -- -D warnings
+
+# Format code
+cargo fmt
+```
+
+## Project Structure
+
+```
+zerobus-rust-examples/
+├── Cargo.toml              # Workspace configuration
+├── .env.example            # Example environment configuration
+└── examples/
+    └── hello-world/        # Example directory
+        ├── Cargo.toml      # Example package manifest
+        ├── README.md       # Example-specific documentation
+        ├── proto/          # Generated Protocol Buffer files
+        │   ├── *.proto     # Schema definition (generated)
+        │   ├── *.rs        # Rust bindings (generated)
+        │   └── *.descriptor # Binary descriptor (generated, not in git)
+        └── src/
+            └── main.rs     # Example implementation
+```
+
+## Code Style Guidelines
+
+- Follow standard Rust formatting using `rustfmt` (run `cargo fmt` before committing)
+- Address all `clippy` warnings before committing (run `cargo clippy`)
+- Use idiomatic Rust patterns: Result types for error handling, Option for nullable values
+- Keep Protocol Buffer message structs in the `proto/` directory
+- Include inline documentation for non-obvious logic, especially around stream lifecycle
+- Use descriptive variable names that reflect SDK concepts (e.g., `stream`, `record`, `ack`)
+
+## Environment Variables
+
+Required environment variables for examples:
+
+- `DATABRICKS_HOST` - Workspace URL (e.g., `https://myworkspace.cloud.databricks.com`)
+- `DATABRICKS_CLIENT_ID` - Service principal application ID
+- `DATABRICKS_CLIENT_SECRET` - Service principal secret
+- `ZEROBUS_ENDPOINT` - gRPC endpoint (format: `https://<workspace_id>.zerobus.<region>.cloud.databricks.com`)
+
+These must be set before running examples. Use `.env` file with the export command shown above.
+
+## Key Concepts for Development
+
+### SDK Initialization
+
+The SDK requires two separate endpoints:
+1. Zerobus endpoint for gRPC streaming
+2. Databricks host for authentication and Unity Catalog metadata
+
+### Stream Lifecycle
+
+Follow this pattern when working with streams:
+1. Create stream with `client.create_stream()`
+2. Ingest records with `stream.ingest_record()`
+3. Flush pending records with `stream.flush()`
+4. Close gracefully with `stream.close()`
+
+Always handle acknowledgment futures returned by `ingest_record()` to ensure durability.
+
+### Protocol Buffer Workflow
+
+- Proto files are GENERATED, not hand-written
+- Always regenerate proto files if the Unity Catalog table schema changes
+- The `.descriptor` file is required at runtime but not committed to git
+- Generated `.rs` files should be included via `mod` or `include!()` in source code
+
+### Recovery and Configuration
+
+The SDK supports automatic recovery on failures. Key configuration options:
+- `max_inflight_records` (default: 50000)
+- `recovery` (default: true)
+- `recovery_timeout_ms` (default: 15000)
+- `recovery_retries` (default: 3)
+
+## Testing Instructions
+
+```bash
+# Run all tests in workspace
+cargo test
+
+# Run tests for specific example
+cargo test --package hello-world
+
+# Run with verbose output
+cargo test -- --nocapture
+
+# Check code quality before committing
+cargo fmt --check && cargo clippy -- -D warnings
+```
+
+Before committing changes:
+1. Ensure code compiles: `cargo build`
+2. Run tests: `cargo test`
+3. Format code: `cargo fmt`
+4. Fix clippy warnings: `cargo clippy -- -D warnings`
+
+## Troubleshooting
+
+### Schema Generation Issues
+
+If proto file generation fails:
+- Verify environment variables are exported correctly
+- Check service principal permissions on the target table:
+  - USE CATALOG
+  - USE SCHEMA
+  - MODIFY and SELECT on table
+- Ensure the table exists in Unity Catalog
+
+### Authentication Errors
+
+- Verify `DATABRICKS_CLIENT_ID` and `DATABRICKS_CLIENT_SECRET` are correct
+- Confirm service principal has appropriate grants
+- Check `DATABRICKS_HOST` format (include `https://`)
+
+### Connection Errors
+
+- Verify `ZEROBUS_ENDPOINT` format: `https://<workspace_id>.zerobus.<region>.cloud.databricks.com`
+- Ensure Zerobus is enabled for your workspace
+- Check network connectivity to Databricks
+
+### Build Errors
+
+If Rust build fails:
+- Ensure Rust 1.70+ is installed: `rustc --version`
+- Clean and rebuild: `cargo clean && cargo build`
+- Verify generated proto files exist in `examples/*/proto/`
+
+## Adding New Examples
+
+When creating a new example:
+
+1. Create directory under `examples/<example-name>/`
+2. Add `Cargo.toml` with appropriate dependencies
+3. Create `proto/` directory for generated schemas
+4. Implement in `src/main.rs`
+5. Add example-specific `README.md`
+6. Update workspace `Cargo.toml` members list
+7. Update main `README.md` examples table
+
+## Security Considerations
+
+- Never commit `.env` file or actual credentials
+- Service principal credentials should use environment variables
+- Rotate credentials regularly
+- Use separate service principals for different environments (dev/staging/prod)
+- Grant minimum required permissions on Unity Catalog tables
+
