@@ -8,6 +8,14 @@ Zerobus is Databricks' streaming ingestion service that allows you to ingest dat
 
 For comprehensive documentation, see the official [Databricks Zerobus Ingest documentation](https://docs.databricks.com/aws/en/ingestion/lakeflow-connect/zerobus-ingest?language=Rust%C2%A0SDK).
 
+## Examples
+
+| Example | Description |
+|---------|-------------|
+| [Hello World](examples/hello-world/README.md) | Basic example demonstrating the fundamental workflow of the Zerobus SDK, including SDK initialization, stream creation, message encoding, record ingestion, and graceful shutdown. |
+| [AWS Lambda SQS Ingestor](examples/aws-lambda-sqs-ingestor/README.md) | AWS Lambda function that processes SQS messages and ingests them into Unity Catalog tables via Zerobus. Includes Terraform infrastructure for deployment with SQS queue, Dead Letter Queue, and Lambda function configured for partial batch response. |
+| [AWS Lambda Generic Ingestor](examples/aws-generic-ingestor/README.md) | Generic AWS Lambda function that can ingest events from any AWS service (API Gateway, EventBridge, S3, SNS, etc.) into Unity Catalog tables via Zerobus. Stores event payloads and Lambda context as JSON strings, making it suitable for centralized logging and event auditing. |
+
 ## Prerequisites
 
 - Rust 1.70 or later
@@ -97,13 +105,6 @@ This will generate three files in the proto directory:
 
 **Note:** The proto directory structure is already set up in the examples. The `zerobus-generate` tool will create all necessary artifacts that match your Unity Catalog table schema. The `*.descriptor` files are not committed to Git because they are binary files.
 
-## Examples
-
-| Example | Description |
-|---------|-------------|
-| [Hello World](examples/hello-world/README.md) | Basic example demonstrating the fundamental workflow of the Zerobus SDK, including SDK initialization, stream creation, message encoding, record ingestion, and graceful shutdown. |
-| [AWS Lambda SQS Ingestor](examples/aws-lambda-sqs-ingestor/README.md) | AWS Lambda function that processes SQS messages and ingests them into Unity Catalog tables via Zerobus. Includes Terraform infrastructure for deployment with SQS queue, Dead Letter Queue, and Lambda function configured for partial batch response. |
-
 ## Project Structure
 
 ```
@@ -113,24 +114,11 @@ zerobus-rust-examples/
 ├── .env.example            # Example environment configuration
 └── examples/
     ├── hello-world/        # Basic hello world example
-    │   ├── Cargo.toml
-    │   ├── README.md
-    │   ├── proto/          # Protocol Buffer definitions
-    │   └── src/
-    │       └── main.rs
-    └── aws-lambda-sqs-ingestor/  # AWS Lambda SQS ingestor
-        ├── Cargo.toml
-        ├── README.md
-        ├── build.sh        # Build script for Lambda
-        ├── proto/          # Protocol Buffer definitions
-        ├── src/
-        │   └── main.rs
-        └── terraform/      # Terraform infrastructure
-            ├── main.tf
-            ├── variables.tf
-            ├── outputs.tf
-            └── README.md
+    ├── aws-lambda-sqs-ingestor/  # AWS Lambda SQS ingestor
+    └── aws-generic-ingestor/  # AWS Lambda generic ingestor
 ```
+
+Each example directory contains its own `README.md` with specific setup and usage instructions.
 
 ## Key Concepts
 
