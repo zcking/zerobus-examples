@@ -38,7 +38,7 @@ GEN_DIR = gen
 # Build Lambda function
 .PHONY: build
 build: ARGS = --arm64
-build: proto-compile
+build:
 	@echo "Building Lambda function..."
 	@echo "Add ARGS='--arm64 --release' to compile a release build"
 	@if ! command -v cargo-lambda &> /dev/null; then \
