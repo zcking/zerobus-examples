@@ -72,8 +72,8 @@ proto-generate:
 		echo "Error: zerobus-generate is not installed."; \
 		echo "Install it by:"; \
 		echo "  1. Clone: git clone https://github.com/databricks/zerobus-sdk-rs.git"; \
-		echo "  2. Build: cd zerobus-sdk-rs/tools/generate_files && cargo build --release"; \
-		echo "  3. Install: cp target/release/generate_files ~/.cargo/bin/zerobus-generate"; \
+		echo "  2. Build: cd zerobus-sdk-rs/rust/tools/generate_files && cargo build --release --target-dir=./target"; \
+		echo "  3. Install: cp target/release/tools ~/.cargo/bin/zerobus-generate"; \
 		exit 1; \
 	fi
 	@if [ -z "$$DATABRICKS_HOST" ] || [ -z "$$DATABRICKS_CLIENT_ID" ] || [ -z "$$DATABRICKS_CLIENT_SECRET" ] || [ -z "$$TABLE_NAME" ]; then \

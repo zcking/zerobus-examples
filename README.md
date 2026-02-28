@@ -66,7 +66,7 @@ The `zerobus-generate` tool is used to generate Protocol Buffer schemas from Uni
 ```bash
 # Clone the Zerobus Rust SDK repository
 git clone https://github.com/databricks/zerobus-sdk-rs.git
-cd zerobus-sdk-rs/tools/generate_files
+cd zerobus-sdk-rs/rust/tools/generate_files
 
 # Build the tool
 cargo build --release

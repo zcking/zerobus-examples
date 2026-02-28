@@ -35,13 +35,13 @@ Protocol Buffer schemas must be generated from Unity Catalog tables using the `z
 ```bash
 # Clone the SDK repository
 git clone https://github.com/databricks/zerobus-sdk-rs.git
-cd zerobus-sdk-rs/tools/generate_files
+cd zerobus-sdk-rs/rust/tools/generate_files
 
 # Build the tool
-cargo build --release
+cargo build --release --target-dir=./target
 
 # Copy to your cargo bin directory (makes it available globally)
-cp target/release/generate_files ~/.cargo/bin/zerobus-generate
+cp target/release/tools ~/.cargo/bin/zerobus-generate
 ```
 
 **Usage:**
