@@ -15,6 +15,7 @@ For comprehensive documentation, see the official [Databricks Zerobus Ingest doc
 | [hello-world](hello-world/README.md) | Rust | Basic example demonstrating the fundamental workflow of the Zerobus SDK, including SDK initialization, stream creation, message encoding, record ingestion, and graceful shutdown. |
 | [aws-lambda-sqs-ingestor](aws-lambda-sqs-ingestor/README.md) | Rust | AWS Lambda function that processes SQS messages and ingests them into Unity Catalog tables via Zerobus. Includes Terraform infrastructure for deployment with SQS queue, Dead Letter Queue, and Lambda function configured for partial batch response. |
 | [aws-generic-ingestor](aws-generic-ingestor/README.md) | Rust | Generic AWS Lambda function that can ingest events from any AWS service (API Gateway, EventBridge, S3, SNS, etc.) into Unity Catalog tables via Zerobus. Stores event payloads and Lambda context as JSON strings, making it suitable for centralized logging and event auditing. |
+| [go-ingest-cli](go-ingest-cli/README.md) | Go | CLI to ingest generic message blobs to a table. Can stream many messages or file contents by reading from STDIN. |
 
 ## Prerequisites
 
