@@ -14,11 +14,11 @@ func main() {
 		Long: `Ingest records into a Databricks Unity Catalog table via Zerobus.
 
 Send a single message inline:
-  go-ingest-cli --table my_table --message "hello"
+  go-ingest-cli --table catalog.schema.table --message "hello"
 
 Or pipe lines from stdin:
-  cat messages.txt | go-ingest-cli --table my_table
-  echo "single line" | go-ingest-cli --table my_table`,
+  cat messages.txt | go-ingest-cli --table catalog.schema.table
+  echo "single line" | go-ingest-cli --table catalog.schema.table`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return ingest(IngestConfig{
 				Endpoint:     viper.GetString("endpoint"),

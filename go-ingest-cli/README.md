@@ -54,6 +54,31 @@ make proto
 
 ## Usage
 
+```bash
+❯ ./go-ingest-cli --help 
+Ingest records into a Databricks Unity Catalog table via Zerobus.
+
+Send a single message inline:
+  go-ingest-cli --table catalog.schema.table --message "hello"
+
+Or pipe lines from stdin:
+  cat messages.txt | go-ingest-cli --table catalog.schema.table
+  echo "single line" | go-ingest-cli --table catalog.schema.table
+
+Usage:
+  go-ingest-cli [flags]
+
+Flags:
+      --client-id string       Databricks service principal client ID
+      --client-secret string   Databricks service principal client secret
+      --endpoint string        Zerobus gRPC endpoint
+  -h, --help                   help for go-ingest-cli
+      --host string            Databricks workspace URL
+      --message string         Single message to ingest (omit to read from stdin)
+      --request-id string      Request ID for ingested messages (default: random UUID)
+      --table string           Unity Catalog table name
+```
+
 All parameters can be set via **flags** or **environment variables**. Flags take precedence.
 
 | Flag | Env Var | Description |
