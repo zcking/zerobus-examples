@@ -1,6 +1,6 @@
-# Rust
+# Go 
+go-ingest-cli
 target/
-Cargo.lock
 
 # IDE
 .vscode/
@@ -20,11 +20,4 @@ Thumbs.db
 
 # Protobuf - Generated code (buf generates these)
 *.descriptor
-gen/rust
 
-# Terraform
-*.tfvars
-*.tfstate
-*.tfstate.backup
-*.terraform.lock.hcl
-.terraform/
