@@ -99,8 +99,8 @@ proto-compile:
 
 .PHONY: invoke
 invoke: MSG ?= test
+invoke: TABLE ?= zerobus_examples.go_ingest_cli.zerobus_messages
 invoke:
 	@echo "Ingesting message..."
-	@echo "NOT IMPLEMENTED"
-	exit 1
+	TABLE_NAME=$(TABLE) go run main.go
 

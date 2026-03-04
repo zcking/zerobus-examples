@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
-	"github.com/zcking/zerobus-examples/go-ingest-cli/gen/pb"
 	zerobus "github.com/databricks/zerobus-sdk-go"
+	"github.com/zcking/zerobus-examples/go-ingest-cli/gen/pb"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
@@ -13,11 +14,11 @@ import (
 
 func main() {
 	// Get configuration from environment
-	zerobusEndpoint := os.Getenv("ZEROBUS_SERVER_ENDPOINT")
-	unityCatalogURL := os.Getenv("DATABRICKS_WORKSPACE_URL")
+	zerobusEndpoint := os.Getenv("ZEROBUS_ENDPOINT")
+	unityCatalogURL := os.Getenv("DATABRICKS_HOST")
 	clientID := os.Getenv("DATABRICKS_CLIENT_ID")
 	clientSecret := os.Getenv("DATABRICKS_CLIENT_SECRET")
-	tableName := os.Getenv("ZEROBUS_TABLE_NAME")
+	tableName := os.Getenv("TABLE_NAME")
 
 	if zerobusEndpoint == "" || unityCatalogURL == "" || clientID == "" || clientSecret == "" || tableName == "" {
 		log.Fatal("Missing required environment variables")
@@ -66,9 +67,9 @@ func main() {
 	batchRecords := []interface{}{}
 	for i := 0; i < 5; i++ {
 		message := &pb.Wrapper{
-			RequestId:  proto.String("0001"),
-			Msg:        proto.String("ping"),
-      EventTime:  proto.Int64(0),
+			RequestId: proto.String("0001"),
+			Msg:       proto.String("ping"),
+			EventTime: proto.Int64(time.Now().UnixMicro()),
 		}
 		data, err := proto.Marshal(message)
 		if err != nil {
