@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package cli_message;
+
+option go_package = "github.com/zcking/zerobus-examples/go-ingest-cli/pb";
+
+message wrapper {
+  optional string request_id = 1;
+  optional string msg = 2;
+  optional int64 event_time = 3;
+}
+
