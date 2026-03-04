@@ -13,7 +13,7 @@ help:
 	@echo "                         DATABRICKS_CLIENT_SECRET, TABLE_NAME)"
 	@echo ""
 	@echo "Testing:"
-	@echo "  make invoke MSG=hello - Invoke the CLI ingesting a simple 'hello' message"
+	@echo "  make invoke MSG=hello - Ingest a single message"
 
 # Variables
 PROTO_DIR = proto
@@ -98,9 +98,9 @@ proto-compile:
 	@echo "  - Descriptors: $(GEN_DIR)/descriptors/"
 
 .PHONY: invoke
-invoke: MSG ?= test
 invoke: TABLE ?= zerobus_examples.go_ingest_cli.zerobus_messages
+invoke: MSG ?= ping
 invoke:
 	@echo "Ingesting message..."
-	TABLE_NAME=$(TABLE) go run main.go
+	go run . --table $(TABLE) --message "$(MSG)"
 

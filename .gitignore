@@ -20,7 +20,7 @@ Thumbs.db
 
 # Protobuf - Generated code (buf generates these)
 *.descriptor
-gen/rust
+**/gen/rust
 
 # Terraform
 *.tfvars

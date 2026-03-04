@@ -2,93 +2,62 @@ package main
 
 import (
 	"log"
-	"os"
-	"time"
 
-	zerobus "github.com/databricks/zerobus-sdk-go"
-	"github.com/zcking/zerobus-examples/go-ingest-cli/gen/pb"
-
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protodesc"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func main() {
-	// Get configuration from environment
-	zerobusEndpoint := os.Getenv("ZEROBUS_ENDPOINT")
-	unityCatalogURL := os.Getenv("DATABRICKS_HOST")
-	clientID := os.Getenv("DATABRICKS_CLIENT_ID")
-	clientSecret := os.Getenv("DATABRICKS_CLIENT_SECRET")
-	tableName := os.Getenv("TABLE_NAME")
+	rootCmd := &cobra.Command{
+		Use:   "go-ingest-cli",
+		Short: "Ingest records into a Databricks Unity Catalog table via Zerobus",
+		Long: `Ingest records into a Databricks Unity Catalog table via Zerobus.
 
-	if zerobusEndpoint == "" || unityCatalogURL == "" || clientID == "" || clientSecret == "" || tableName == "" {
-		log.Fatal("Missing required environment variables")
-	}
+Send a single message inline:
+  go-ingest-cli --table my_table --message "hello"
 
-	// Create SDK instance
-	sdk, err := zerobus.NewZerobusSdk(zerobusEndpoint, unityCatalogURL)
-	if err != nil {
-		log.Fatalf("Failed to create SDK: %v", err)
-	}
-	defer sdk.Free()
-
-	// Get the file descriptor from generated code.
-	fileDesc := pb.File_cli_message_proto
-
-	// Convert to FileDescriptorProto and extract the message descriptor.
-	fileDescProto := protodesc.ToFileDescriptorProto(fileDesc)
-
-	// Get the message descriptor (first message in the file).
-	messageDescProto := fileDescProto.MessageType[0]
-
-	// Marshal the descriptor.
-	descriptorBytes, err := proto.Marshal(messageDescProto)
-	if err != nil {
-		log.Fatalf("Failed to marshal descriptor: %v", err)
-	}
-
-	options := zerobus.DefaultStreamConfigurationOptions()
-
-	// Create stream.
-	stream, err := sdk.CreateStream(
-		zerobus.TableProperties{
-			TableName:       tableName,
-			DescriptorProto: descriptorBytes,
+Or pipe lines from stdin:
+  cat messages.txt | go-ingest-cli --table my_table
+  echo "single line" | go-ingest-cli --table my_table`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return ingest(IngestConfig{
+				Endpoint:     viper.GetString("endpoint"),
+				Host:         viper.GetString("host"),
+				ClientID:     viper.GetString("client_id"),
+				ClientSecret: viper.GetString("client_secret"),
+				Table:        viper.GetString("table"),
+				RequestID:    viper.GetString("request_id"),
+				Message:      viper.GetString("message"),
+			})
 		},
-		clientID,
-		clientSecret,
-		options,
-	)
-	if err != nil {
-		log.Fatalf("Failed to create stream: %v", err)
-	}
-	defer stream.Close()
-
-	log.Println("Ingesting batch of records...")
-	batchRecords := []interface{}{}
-	for i := 0; i < 5; i++ {
-		message := &pb.Wrapper{
-			RequestId: proto.String("0001"),
-			Msg:       proto.String("ping"),
-			EventTime: proto.Int64(time.Now().UnixMicro()),
-		}
-		data, err := proto.Marshal(message)
-		if err != nil {
-			log.Printf("Failed to marshal batch record %d: %v", i, err)
-			continue
-		}
-		batchRecords = append(batchRecords, data)
 	}
 
-	lastOffset, err := stream.IngestRecordsOffset(batchRecords)
-	if err != nil {
-		log.Fatalf("Failed to ingest batch: %v", err)
-	}
-	log.Printf("Batch of %d records ingested, last offset: %d", len(batchRecords), lastOffset)
+	// Define flags.
+	rootCmd.Flags().String("endpoint", "", "Zerobus gRPC endpoint")
+	rootCmd.Flags().String("host", "", "Databricks workspace URL")
+	rootCmd.Flags().String("client-id", "", "Databricks service principal client ID")
+	rootCmd.Flags().String("client-secret", "", "Databricks service principal client secret")
+	rootCmd.Flags().String("table", "", "Unity Catalog table name")
+	rootCmd.Flags().String("request-id", "", "Request ID for ingested messages (default: random UUID)")
+	rootCmd.Flags().String("message", "", "Single message to ingest (omit to read from stdin)")
 
-	// Wait for the last offset to ensure the entire batch is acknowledged.
-	if err := stream.WaitForOffset(lastOffset); err != nil {
-		log.Fatalf("Failed to wait for batch acknowledgment: %v", err)
+	// Bind flags to Viper.
+	viper.BindPFlag("endpoint", rootCmd.Flags().Lookup("endpoint"))
+	viper.BindPFlag("host", rootCmd.Flags().Lookup("host"))
+	viper.BindPFlag("client_id", rootCmd.Flags().Lookup("client-id"))
+	viper.BindPFlag("client_secret", rootCmd.Flags().Lookup("client-secret"))
+	viper.BindPFlag("table", rootCmd.Flags().Lookup("table"))
+	viper.BindPFlag("request_id", rootCmd.Flags().Lookup("request-id"))
+	viper.BindPFlag("message", rootCmd.Flags().Lookup("message"))
+
+	// Bind environment variables.
+	viper.BindEnv("endpoint", "ZEROBUS_ENDPOINT")
+	viper.BindEnv("host", "DATABRICKS_HOST")
+	viper.BindEnv("client_id", "DATABRICKS_CLIENT_ID")
+	viper.BindEnv("client_secret", "DATABRICKS_CLIENT_SECRET")
+	viper.BindEnv("table", "TABLE_NAME")
+
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatal(err)
 	}
-	log.Println("Batch acknowledged!")
-	log.Println("All operations completed successfully!")
 }
